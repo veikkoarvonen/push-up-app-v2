@@ -29,6 +29,21 @@
 			path = "Push Up App V2";
 			sourceTree = "<group>";
 		};
+		B6090C632F154BE30077633B /* Model */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Model;
+			sourceTree = "<group>";
+		};
+		B6090C652F154C010077633B /* View */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = View;
+			sourceTree = "<group>";
+		};
+		B6090C972F15565E0077633B /* Fonts */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,6 +61,9 @@
 			isa = PBXGroup;
 			children = (
 				B6090C4A2F154BD30077633B /* Push Up App V2 */,
+				B6090C632F154BE30077633B /* Model */,
+				B6090C652F154C010077633B /* View */,
+				B6090C972F15565E0077633B /* Fonts */,
 				B6090C492F154BD30077633B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -75,6 +93,9 @@
 			);
 			fileSystemSynchronizedGroups = (
 				B6090C4A2F154BD30077633B /* Push Up App V2 */,
+				B6090C632F154BE30077633B /* Model */,
+				B6090C652F154C010077633B /* View */,
+				B6090C972F15565E0077633B /* Fonts */,
 			);
 			name = "Push Up App V2";
 			packageProductDependencies = (
@@ -148,11 +169,13 @@
 				DEVELOPMENT_TEAM = Q2TQZ8WL57;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Push Up App V2/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to detect push-ups";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -180,11 +203,13 @@
 				DEVELOPMENT_TEAM = Q2TQZ8WL57;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Push Up App V2/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to detect push-ups";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
