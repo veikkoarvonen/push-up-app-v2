@@ -13,6 +13,7 @@ class ScreentimeVC: UIViewController {
     private var cameraIsRunning: Bool = false
     private var uiElements: ScreentimeUIElements!
     private let cameraManager = CameraPreviewManager()
+    private let coreData = CoreDataManager()
     
     private let pushUpDetector = PushUpDetector()
     private var lastVisionTime = CACurrentMediaTime()
@@ -68,6 +69,10 @@ class ScreentimeVC: UIViewController {
         } else {
             cameraManager.stopPreview()
             print("User did \(pushUpDetector.count) reps")
+            if pushUpDetector.count > 0 {
+                UserDefaults.standard.set(true, forKey: "shouldUpdateMainChart")
+                coreData.createWorkout(reps: Int16(pushUpDetector.count), date: Date())
+            }
             cameraIsRunning.toggle()
             updateUIState(cameraIsActive: cameraIsRunning)
         }

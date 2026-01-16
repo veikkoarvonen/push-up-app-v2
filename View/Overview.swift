@@ -11,94 +11,91 @@ class OverviewVC: UIViewController {
     
     var hasSetUIUp: Bool = false
     var uiElements = OverviewVCComponents()
+    let builder = UIGrinder()
+    let coreData = CoreDataManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        setUI()
-        
-        let coreData = CoreDataManager()
-        //print(coreData.getDatesForThisWeek())
-        
-        let now = Date()
-        print(now)
-        let startOfNow = Calendar.current.startOfDay(for: now)
-        print(startOfNow)
-        
-        
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         guard !hasSetUIUp else { return }
         hasSetUIUp = true
-        view.layoutIfNeeded()
-        addDynamicUI()
-        updatePushUpColums()
+        print(coreData.getWeeklyPushUpData())
+        setUpUI()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if UserDefaults.standard.bool(forKey: "shouldUpdateMainChart") {
+            print("View did appear and the chart should be updated")
+            updatePushUpColumns(animated: true, useTestData: false)
+            UserDefaults.standard.set(false, forKey: "shouldUpdateMainChart")
+        } else {
+            print("View did appear but the chart should not be updated")
+        }
     }
 
 
 }
 
+
+//MARK: - User interface
 extension OverviewVC {
     
-    private func setUI() {
-        
-        let builder = UIBuilder(viewFrame: view.frame, safeAreaInsets: view.safeAreaInsets)
-        
-        //Background view
+    private func setUpUI() {
+        setBackGroundView()
+        setHeader()
+        setPushUpContainer()
+        setPushUpChartLines()
+        setPushUpColums()
+        updatePushUpColumns(animated: true, useTestData: true)
+    }
+    
+    private func setBackGroundView() {
         let bgView = UIView()
         bgView.backgroundColor = UIColor(named: "gray1")
-        bgView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(bgView)
+        bgView.frame = CGRect(x: 0.0, y: view.safeAreaInsets.top, width: view.frame.width, height: view.frame.height - view.safeAreaInsets.top - view.safeAreaInsets.bottom)
         uiElements.backgroundView = bgView
+    }
+    private func setHeader() {
         
-        NSLayoutConstraint.activate([
-            bgView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            bgView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bgView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bgView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
-        
-        //Header label
         let header = UILabel()
         builder.styleHeader(header: header, text: "Overview")
-        header.translatesAutoresizingMaskIntoConstraints = false
-        bgView.addSubview(header)
+        uiElements.backgroundView.addSubview(header)
+        header.frame = CGRect(x: 30.0, y: 30.0, width: view.frame.width - 60.0, height: 40.0)
         uiElements.header = header
+        if C.testUIwithColors { header.backgroundColor = .red }
         
-        NSLayoutConstraint.activate([
-            header.topAnchor.constraint(equalTo: bgView.topAnchor, constant: 30.0),
-            header.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: 30.0),
-            header.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -30.0),
-            header.heightAnchor.constraint(equalToConstant: 50.0)
-        ])
         
-        //Push up chart container
-        let pushUpChartView = UIView()
-        pushUpChartView.translatesAutoresizingMaskIntoConstraints = false
-        builder.styleContainerView(view: pushUpChartView)
-        builder.implementContainerShadow(targetView: pushUpChartView)
-        bgView.addSubview(pushUpChartView)
-        uiElements.pushUpChartView = pushUpChartView
+    }
+    private func setPushUpContainer() {
         
-        NSLayoutConstraint.activate([
-            pushUpChartView.topAnchor.constraint(equalTo: header.bottomAnchor, constant: 30.0),
-            pushUpChartView.leadingAnchor.constraint(equalTo: bgView.leadingAnchor, constant: 30.0),
-            pushUpChartView.trailingAnchor.constraint(equalTo: bgView.trailingAnchor, constant: -30.0),
-            pushUpChartView.heightAnchor.constraint(equalTo: bgView.heightAnchor, multiplier: 0.4)
-        ])
+        let container = UIView()
+        builder.styleContainerView(view: container)
+        builder.implementContainerShadow(targetView: container)
+        uiElements.backgroundView.addSubview(container)
+        uiElements.pushUpChartContainer = container
+        if C.testUIwithColors { container.backgroundColor = .yellow }
+        container.frame = CGRect(x: 30.0, y: uiElements.header.frame.maxY + 20.0, width: view.frame.width - 60.0, height: view.frame.height * 0.3)
         
-        //Weekday row
-        let weekdayRowView = UIStackView()
-        weekdayRowView.axis = .horizontal
-        weekdayRowView.distribution = .fillEqually
-        weekdayRowView.spacing = 0.0
-        weekdayRowView.translatesAutoresizingMaskIntoConstraints = false
-        pushUpChartView.addSubview(weekdayRowView)
-        uiElements.weekdayStackView = weekdayRowView
+        let margin: CGFloat = 5.0
+        
+        let chartView = UIView()
+        chartView.backgroundColor = C.testUIwithColors ? .red : .clear
+        chartView.frame = CGRect(x: 5.0, y: 10.0, width: container.frame.width - margin * 2.0, height: container.frame.height - margin * 2 - 20.0 - 15.0)
+        container.addSubview(chartView)
+        uiElements.pushUpChartView = chartView
+        
         
         let weekdayStrings: [String] = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
+        let weekdayRowWidth = container.frame.width - margin * 2.0
+        let weekdatRowHeigth: CGFloat = 20.0
+        var xOffset: CGFloat = margin
+        let yOffset: CGFloat = chartView.frame.maxY + 5.0
         
         for i in 0..<7 {
             let label = UILabel()
@@ -106,128 +103,130 @@ extension OverviewVC {
             label.textColor = .white
             label.font = UIFont(name: C.fonts.bold, size: 15.0)
             label.text = weekdayStrings[i]
-            //label.backgroundColor = .yellow
-            weekdayRowView.addArrangedSubview(label)
+            uiElements.pushUpChartContainer.addSubview(label)
+            label.frame = CGRect(x: xOffset, y: yOffset, width: weekdayRowWidth / 7, height: weekdatRowHeigth)
+            if C.testUIwithColors { label.backgroundColor = .green }
+            xOffset += weekdayRowWidth / 7.0
         }
-        
-        NSLayoutConstraint.activate([
-            weekdayRowView.leadingAnchor.constraint(equalTo: pushUpChartView.leadingAnchor, constant: 5.0),
-            weekdayRowView.trailingAnchor.constraint(equalTo: pushUpChartView.trailingAnchor, constant: -5.0),
-            weekdayRowView.bottomAnchor.constraint(equalTo: pushUpChartView.bottomAnchor, constant: -5.0),
-            weekdayRowView.heightAnchor.constraint(equalToConstant: 20.0)
-        ])
-
         
         
     }
-    
-    private func addDynamicUI() {
+    private func setPushUpChartLines() {
         
+        var yOffset: CGFloat = 0.0
+        let yInterval: CGFloat = uiElements.pushUpChartView.frame.height / 5.0
         
-        
-        //Chart lines
-        let margin: CGFloat = 5.0
-        let weekdayStackHeigth: CGFloat = 20.0
-        let lineWidth: CGFloat = uiElements.pushUpChartView.frame.width - margin * 2
-        var lineY: CGFloat = margin + 5.0
-        let totalChartHeigth: CGFloat = uiElements.pushUpChartView.frame.height - weekdayStackHeigth - 20.0
-        let yInterval: CGFloat = totalChartHeigth / 5.0
         for _ in 0...5 {
             let line = UIView()
-            line.backgroundColor = UIColor(named: "gray1")
+            line.backgroundColor = C.testUIwithColors ? .green : UIColor(named: "gray1")
             uiElements.pushUpChartView.addSubview(line)
             
-            line.frame = CGRect(x: margin, y: lineY, width: lineWidth, height: 1.0)
-            lineY += yInterval
+            line.frame = CGRect(x: 0.0, y: yOffset, width: uiElements.pushUpChartView.frame.width, height: 1.0)
+            yOffset += yInterval
         }
         
-        let pushUpColumGap: CGFloat = 2.0
-        let totalPushUpColumSpace: CGFloat = uiElements.pushUpChartView.bounds.width - margin * 2.0
-        let pushUpColumWidth: CGFloat = totalPushUpColumSpace / 7.0 - pushUpColumGap
-        let pushUpColumnHeigth: CGFloat = uiElements.pushUpChartView.bounds.height - weekdayStackHeigth - 20.0
-        var pushUpColumX: CGFloat = margin + 1.0
+    }
+    private func setPushUpColums() {
         
-        var colums: [UIView] = []
-        var columLabels: [UILabel] = []
+        let columnSpaceWidth: CGFloat = uiElements.pushUpChartView.frame.width / 7.0
+        let columnHeigth: CGFloat = uiElements.pushUpChartView.frame.height
+        let columnWidth: CGFloat = columnSpaceWidth - 4.0
+        var xOffset: CGFloat = 2.0
+        
+        var columnsToAdd: [UIView] = []
+        var labelsToAdd: [UILabel] = []
         
         for _ in 0..<7 {
-            let pushUpColum = UIView()
-            pushUpColum.backgroundColor = UIColor(named: "orange1")?.withAlphaComponent(0.8)
-            pushUpColum.layer.cornerRadius = 3.0
-            uiElements.pushUpChartView.addSubview(pushUpColum)
-            pushUpColum.frame = CGRect(x: pushUpColumX, y: 10.0, width: pushUpColumWidth, height: pushUpColumnHeigth)
-            pushUpColumX += totalPushUpColumSpace / 7.0
+            let column = UIView()
+            column.backgroundColor = UIColor(named: "orange1")?.withAlphaComponent(0.8)
+            column.layer.cornerRadius = 5.0
+            uiElements.pushUpChartView.addSubview(column)
+            column.frame = CGRect(x: xOffset, y: 0, width: columnWidth, height: columnHeigth)
+            columnsToAdd.append(column)
             
             let pushUpColumLabel = UILabel()
             pushUpColumLabel.textColor = .white
             pushUpColumLabel.textAlignment = .center
             pushUpColumLabel.font = UIFont(name: C.fonts.bold, size: 12.0)
             pushUpColumLabel.text = "22"
-            pushUpColum.addSubview(pushUpColumLabel)
-            pushUpColumLabel.frame = CGRect(x: 0.0, y: 5.0, width: pushUpColum.frame.width, height: 12.0)
+            column.addSubview(pushUpColumLabel)
+            pushUpColumLabel.frame = CGRect(x: 0.0, y: 5.0, width: column.frame.width, height: 12.0)
+            labelsToAdd.append(pushUpColumLabel)
             
-            colums.append(pushUpColum)
-            columLabels.append(pushUpColumLabel)
+            xOffset += columnSpaceWidth
         }
         
-        uiElements.pushUpColums = colums
-        uiElements.pushUpColumLabels = columLabels
-        
-        
+        uiElements.pushUpColums = columnsToAdd
+        uiElements.pushUpColumLabels = labelsToAdd
         
     }
-    
-    private func updatePushUpColums() {
+    private func updatePushUpColumns(animated: Bool, useTestData: Bool) {
+        
         guard uiElements.pushUpColums.count == 7, uiElements.pushUpColumLabels.count == 7 else {
-            print("Invalid push up colums count!")
+            print("Invalid push up column count")
+            return }
+        
+        let pushUpData: [Int] = useTestData ? C.chartTestData : CoreDataManager.shared.getWeeklyPushUpData()
+        
+        guard !pushUpData.isEmpty else {
+            print("No push up data available, exiting function")
             return
-            
         }
         
-        let testData: [Int] = [12, 24, 23, 54, 35, 26, 7]
-        
-        let maxPushUps = testData.max() ?? 50
-        let chartHeigth: CGFloat = uiElements.pushUpChartView.bounds.height - uiElements.weekdayStackView.bounds.height - 20.0
-        
+        let maxPushUps = pushUpData.max() ?? 50
         var chartMaxValue: Int = 0
         while chartMaxValue < maxPushUps {
             chartMaxValue += 10
         }
         
-        //print("Chart max value: \(chartMaxValue)")
+        print("Push up chart max value set to \(chartMaxValue)")
         
+        for i in 0..<7 {
 
-        
-        for i in 0..<uiElements.pushUpColums.count {
+            let targetColumn = uiElements.pushUpColums[i]
+            let targetLabel = uiElements.pushUpColumLabels[i]
             
-            let newHeightPercentage: CGFloat = CGFloat(testData[i]) / CGFloat(chartMaxValue)
-            let newHeight = chartHeigth * newHeightPercentage
-            
-            let column = uiElements.pushUpColums[i]
-            let label = uiElements.pushUpColumLabels[i]
-            
-            label.text = testData[i].description
-            
-            let yOffset: CGFloat = chartHeigth * (1.0 - newHeightPercentage) + 10.0
-            
-            // Animate bar growth
-            UIView.animate(withDuration: 0.6,
-                           delay: Double(i) * 0.05,
-                           options: [.curveEaseOut]) {
-                column.frame.size.height = newHeight
-                column.frame.origin.y = yOffset
+            if pushUpData[i] == 0 {
+                print("Push up data for day \(i) is 0, not adding corresponding column")
+                uiElements.pushUpColums[i].isHidden = true
+                continue
             }
             
+            targetLabel.text = "\(pushUpData[i])"
+            let relativeHeigth = CGFloat(pushUpData[i]) / CGFloat(chartMaxValue)
+            let sheetHeigth = uiElements.pushUpChartView.frame.height
+            let yOffset = sheetHeigth - (sheetHeigth * relativeHeigth)
+            let finalHeight: CGFloat = sheetHeigth * relativeHeigth
+            
+            if finalHeight < 20.0 { targetLabel.isHidden = true }
+            
+            targetColumn.frame.origin.y = animated ? sheetHeigth : yOffset
+            targetColumn.frame.size.height = animated ? 0 : finalHeight
+            
+            if animated {
+                UIView.animate(withDuration: 0.5, delay: 0.0, options: [.curveEaseOut]) {
+                    targetColumn.frame.origin.y = yOffset
+                    targetColumn.frame.size.height = finalHeight
+                }
+            }
+            
+            
+            
+            
+            
         }
+        
     }
-    
 }
+
+
 
 struct OverviewVCComponents {
     var backgroundView = UIView()
     var header = UILabel()
+    //Push up chart
+    var pushUpChartContainer = UIView()
     var pushUpChartView = UIView()
-    var weekdayStackView = UIStackView()
     var pushUpColums = [UIView]()
     var pushUpColumLabels = [UILabel]()
 }

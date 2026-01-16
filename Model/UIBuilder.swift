@@ -57,3 +57,27 @@ struct UIBuilder {
     }
     
 }
+
+struct UIGrinder {
+    
+    func styleHeader(header: UILabel, text: String) {
+        header.text = text
+        header.textColor = .white
+        header.textAlignment = .left
+        header.font = UIFont(name: C.fonts.bold, size: 35.0)
+    }
+    
+    func styleContainerView(view: UIView) {
+        view.backgroundColor = UIColor(named: "gray2")
+        view.layer.cornerRadius = 10
+    }
+    
+    func implementContainerShadow(targetView: UIView) {
+        targetView.layer.shadowColor = C.Colors.brandOrangeCGValue
+        targetView.layer.shadowOpacity = 0.40
+        targetView.layer.shadowOffset = CGSize(width: 0, height: 4)
+        targetView.layer.shadowRadius = 15
+        targetView.layer.masksToBounds = false
+    }
+    
+}

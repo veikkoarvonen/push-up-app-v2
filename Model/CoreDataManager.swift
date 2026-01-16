@@ -75,6 +75,27 @@ final class CoreDataManager {
             return []
         }
     }
+    
+    func fetchSingleDayWorkouts(for date: Date) -> [Workout] {
+        let cal = Calendar.current
+        let timeRangeStart = cal.startOfDay(for: date)
+        let nextDay = cal.date(byAdding: .day, value: 1, to: date)!
+        let timeRangeEnd = cal.startOfDay(for: nextDay)
+        let workouts = fetchWorkouts(from: timeRangeStart, to: timeRangeEnd)
+        return workouts
+    }
+    
+    func getWeeklyPushUpData() -> [Int] {
+        
+        var weeklyData: [Int] = []
+        let thisWeeksDates = getDatesForThisWeek()
+        for date in thisWeeksDates {
+            let workouts = fetchSingleDayWorkouts(for: date)
+            let totalPushUps = workouts.reduce(0) { $0 + Int($1.reps) }
+            weeklyData.append(totalPushUps)
+        }
+        return weeklyData
+    }
 
     
     //MARK: - Delete all

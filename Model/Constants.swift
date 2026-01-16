@@ -24,5 +24,6 @@ struct C {
     }
     
     static let testUIwithColors: Bool = false
+    static let chartTestData = [12, 240, 23, 54, 0, 26, 7]
     
 }
